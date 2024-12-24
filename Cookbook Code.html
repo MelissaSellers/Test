@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <!-- Defines the character encoding for the document as UTF-8. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures the page is responsive to different screen sizes. -->
+    <title>Recipe Collection</title> <!-- Sets the title of the document. -->
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* Sets the font style for the page. */
+            display: flex; /* Makes the body a flex container. */
+            margin: 0; /* Removes default margin. */
+            padding: 0; /* Removes default padding. */
+        }
+ 
+        #sidebar {
+            width: 25%; /* Sets the sidebar width to 25% of the viewport width. */
+            max-width: 300px; /* Limits the sidebar's maximum width to 300px. */
+            background-color: #f8f8f8; /* Sets a light gray background for the sidebar. */
+            border-right: 1px solid #ccc; /* Adds a border to the right side of the sidebar. */
+            padding: 10px; /* Adds padding inside the sidebar. */
+            overflow-y: auto; /* Enables vertical scrolling if content overflows. */
+        }
+ 
+        #content {
+            flex-grow: 1; /* Allows the content area to expand and fill available space. */
+            padding: 20px; /* Adds padding inside the content area. */
+        }
+ 
+        .book, .chapter {
+            margin: 10px 0; /* Adds vertical margin between books and chapters. */
+            cursor: pointer; /* Changes the cursor to a pointer when hovering. */
+        }
+ 
+        .chapters, .recipes {
+            margin-left: 20px; /* Indents chapters and recipes. */
+            display: none; /* Hides chapters and recipes by default. */
+        }
+ 
+        .recipe {
+            margin-left: 20px; /* Indents recipes further. */
+            cursor: pointer; /* Changes the cursor to a pointer when hovering. */
+        }
+    </style>
+    <script>
+        // Fetches the list of chapters for a specific book from GitHub.
+        async function fetchChapters(bookFolder, bookId) {
+            const apiUrl = `https://api.github.com/repos/MelissaSellers/Test/contents/${bookFolder}`; // GitHub API URL for the book folder.
+            try {
+                const response = await fetch(apiUrl); // Sends a request to fetch folder contents.
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch chapters: ${response.statusText}`); // Throws an error if the response is not OK.
+                }
+                const folders = await response.json(); // Parses the response JSON.
+                const chaptersElement = document.getElementById(bookId); // Gets the element to display chapters.
+                chaptersElement.innerHTML = ''; // Clears any existing content in the chapters element.
+ 
+                folders.forEach(folder => {
+                    if (folder.type === 'dir') { // Checks if the folder item is a directory.
+                        const chapterId = `${bookId}-${folder.name.replace(/\s+/g, '-')}`; // Creates a unique ID for the chapter.
+                        chaptersElement.innerHTML += `
+                            <div class="chapter" onclick="toggleVisibility('${chapterId}')">${folder.name}</div>
+                            <div id="${chapterId}" class="recipes"></div>
+                        `; // Adds the chapter and its container for recipes.
+                        fetchRecipes(folder.path, chapterId); // Fetches recipes for the chapter.
+                    }
+                });
+            } catch (error) {
+                console.error(error); // Logs any errors to the console.
+                document.getElementById(bookId).innerHTML = `<p>Error loading chapters</p>`; // Displays an error message.
+            }
+        }
+ 
+    // Fetches the list of recipes for a specific chapter from GitHub.
+    async function fetchRecipes(chapterPath, chapterId) {
+        const apiUrl = `https://api.github.com/repos/MelissaSellers/Test/contents/${chapterPath}`; // GitHub API URL for the chapter.
+        try {
+            const response = await fetch(apiUrl); // Sends a request to fetch chapter contents.
+            if (!response.ok) {
+                throw new Error(`Failed to fetch recipes: ${response.statusText}`); // Throws an error if the response is not OK.
+            }
+            const files = await response.json(); // Parses the response JSON.
+            const recipesElement = document.getElementById(chapterId); // Gets the element to display recipes.
+            recipesElement.innerHTML = ''; // Clears any existing content in the recipes element.
+ 
+            files.forEach(file => {
+                if (file.type === 'file' && file.name.endsWith('.html')) { // Checks if the file is an HTML file.
+                    const recipeUrl = `https://raw.githubusercontent.com/MelissaSellers/Test/main/${file.path}`; // URL to access the raw recipe file.
+                    recipesElement.innerHTML += `
+                        <div class="recipe">
+                            <a href="#" onclick="loadRecipe('${recipeUrl}')">${file.name.replace('.html', '')}</a>
+                        </div>
+                    `; // Adds a link to load the recipe.
+                }
+            });
+        } catch (error) {
+            console.error(error); // Logs any errors to the console.
+            document.getElementById(chapterId).innerHTML = `<p>Error loading recipes</p>`; // Displays an error message.
+        }
+    }
+ 
+    // Loads and displays the content of a specific recipe.
+    async function loadRecipe(url) {
+        try {
+            const response = await fetch(url); // Sends a request to fetch the recipe content.
+            if (!response.ok) {
+                throw new Error(`Failed to load recipe: ${response.statusText}`); // Throws an error if the response is not OK.
+            }
+            const recipeHTML = await response.text(); // Parses the response text as HTML.
+            document.getElementById('content').innerHTML = recipeHTML; // Displays the recipe content.
+        } catch (error) {
+            document.getElementById('content').innerHTML = `<p>Error: ${error.message}</p>`; // Displays an error message.
+        }
+    }
+ 
+        // Toggles the visibility of a specific element.
+        function toggleVisibility(elementId) {
+            const element = document.getElementById(elementId); // Gets the element by its ID.
+            const siblingElements = Array.from(element.parentElement.children).filter(el => el !== element); // Gets sibling elements.
+ 
+            siblingElements.forEach(sibling => {
+                if (sibling.classList.contains('chapters') || sibling.classList.contains('recipes')) {
+                    sibling.style.display = 'none'; // Hides sibling elements.
+                }
+            });
+ 
+            element.style.display = element.style.display === 'block' ? 'none' : 'block'; // Toggles visibility.
+        }
+ 
+        // Loads chapters for Ken's Recipes on page load.
+        window.onload = () => {
+            fetchChapters("2021-02-22_Ken's Recipes", 'book1-chapters'); // Fetches chapters for the first book.
+        };
+    </script>
+</head>
+<body>
+    <div id="sidebar">
+        <div class="book" onclick="toggleVisibility('book1-chapters')">Ken’s Recipes</div> <!-- Sidebar item for Ken's Recipes. -->
+        <div id="book1-chapters" class="chapters">
+            <p>Loading chapters...</p> <!-- Placeholder text while chapters load. -->
+        </div>
+        <div class="book" onclick="toggleVisibility('book2-chapters')">Sellers Family Cookbook</div> <!-- Sidebar item for Sellers Family Cookbook. -->
+        <div id="book2-chapters" class="chapters">
+            <p>Chapters not yet implemented.</p> <!-- Placeholder text for unimplemented chapters. -->
+        </div>
+    </div>
+    <div id="content">
+        <h1>Welcome to the Recipe Collection</h1> <!-- Header for the content area. -->
+        <p>Select a book, chapter, and recipe to view details here.</p> <!-- Instructional text for users. -->
+    </div>
+</body>
+</html>
