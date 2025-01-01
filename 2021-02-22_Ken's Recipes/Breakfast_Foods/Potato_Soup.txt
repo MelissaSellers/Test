@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potato Soup</title>
+    <style>
+        body {
+            font-family: Times New Roman, Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 26px;
+        }
+
+        p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Potato Soup</h1>
+    <hr>
+    <p style="text-align: right;">Serves: 8</p>
+    <p style="font-style: italic;">Grandma's famous potato soup! YUM!</p>
+    <p style="font-weight: bold; margin: 15px;">8 slices bacon, cut into small pieces<br>1 cup chopped onions<br>1 cup sour cream<br>1 can cream of chicken soup<br>Dash salt<br>Dash pepper<br>2 tablespoons parsley flakes<br>1 quart cubed potatoes<br>1/4 cup milk</p>
+    <p>Brown bacon and onions. Drain fat and add to potatoes. Cover with just enough water to cook until potatoes are tender. Add sour cream and chicken soup, and enough milk to achieve desired consistency. Heat until hot, but do not boil. Sprinkle with parsley flakes. Refrigerate overnight to achieve better flavor.</p>
+</body>
+</html>
